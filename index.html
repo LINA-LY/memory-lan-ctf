@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Lane - CTF Challenge | Shellmates</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="An interactive CTF challenge about historical cyber security breaches. Learn about Yahoo and Equifax data breaches through conversation.">
+    <meta name="keywords" content="CTF, cybersecurity, data breach, hacking challenge, shellmates">
+    <meta name="author" content="Shellmates">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Memory Lane - CTF Challenge">
+    <meta property="og:description" content="Walk through cyber security history. Discover the stories behind massive data breaches.">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 50%, #0f0f1e 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(16, 255, 153, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 20, 147, 0.05) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: rgba(26, 26, 46, 0.95);
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 100px rgba(16, 255, 153, 0.1),
+                inset 0 0 50px rgba(255, 20, 147, 0.05);
+            border: 1px solid rgba(16, 255, 153, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(16, 255, 153, 0.2) 0%, rgba(255, 20, 147, 0.2) 100%);
+            border-bottom: 2px solid rgba(16, 255, 153, 0.3);
+            color: #10ff99;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(16, 255, 153, 0.2);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-shadow: 
+                0 0 10px rgba(16, 255, 153, 0.5),
+                0 0 20px rgba(16, 255, 153, 0.3);
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 5px;
+            color: #ff69b4;
+            text-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: rgba(15, 15, 30, 0.5);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.bot {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .message.user {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+            border: 2px solid;
+            box-shadow: 0 0 20px;
+        }
+
+        .bot .avatar {
+            background: linear-gradient(135deg, rgba(16, 255, 153, 0.2) 0%, rgba(16, 255, 153, 0.1) 100%);
+            border-color: #10ff99;
+            box-shadow: 0 0 20px rgba(16, 255, 153, 0.4);
+        }
+
+        .user .avatar {
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.2) 0%, rgba(255, 20, 147, 0.1) 100%);
+            border-color: #ff69b4;
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.4);
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            line-height: 1.7;
+            word-wrap: break-word;
+            border: 1px solid;
+        }
+
+        .bot .message-content {
+            background: rgba(26, 26, 46, 0.8);
+            color: #e0e0e0;
+            border-color: rgba(16, 255, 153, 0.3);
+            box-shadow: 
+                0 4px 15px rgba(0, 0, 0, 0.3),
+                0 0 30px rgba(16, 255, 153, 0.1);
+        }
+
+        .user .message-content {
+            background: rgba(255, 20, 147, 0.15);
+            color: #ffffff;
+            border-color: rgba(255, 20, 147, 0.4);
+            box-shadow: 
+                0 4px 15px rgba(0, 0, 0, 0.3),
+                0 0 30px rgba(255, 20, 147, 0.2);
+        }
+
+        .wrong-answer {
+            background: rgba(255, 50, 50, 0.15) !important;
+            border-color: rgba(255, 50, 50, 0.4) !important;
+            box-shadow: 
+                0 4px 15px rgba(0, 0, 0, 0.3),
+                0 0 30px rgba(255, 50, 50, 0.2) !important;
+        }
+
+        .hint-message {
+            background: rgba(255, 165, 0, 0.15) !important;
+            border-color: rgba(255, 165, 0, 0.4) !important;
+            box-shadow: 
+                0 4px 15px rgba(0, 0, 0, 0.3),
+                0 0 30px rgba(255, 165, 0, 0.2) !important;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: rgba(26, 26, 46, 0.9);
+            border-top: 2px solid rgba(16, 255, 153, 0.3);
+            display: flex;
+            gap: 12px;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid rgba(16, 255, 153, 0.3);
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s;
+            background: rgba(15, 15, 30, 0.8);
+            color: #ffffff;
+        }
+
+        #userInput::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        #userInput:focus {
+            border-color: #10ff99;
+            box-shadow: 0 0 20px rgba(16, 255, 153, 0.3);
+            background: rgba(15, 15, 30, 0.95);
+        }
+
+        #sendBtn {
+            background: linear-gradient(135deg, #10ff99 0%, #00cc7a 100%);
+            color: #0f0f1e;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(16, 255, 153, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #sendBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 25px rgba(16, 255, 153, 0.6);
+            background: linear-gradient(135deg, #00ff88 0%, #00bb6a 100%);
+        }
+
+        #sendBtn:active {
+            transform: translateY(0);
+        }
+
+        .flag-display {
+            background: linear-gradient(135deg, rgba(16, 255, 153, 0.3) 0%, rgba(0, 204, 122, 0.3) 100%);
+            border: 2px solid #10ff99;
+            color: #10ff99;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: 
+                0 5px 20px rgba(16, 255, 153, 0.3),
+                inset 0 0 30px rgba(16, 255, 153, 0.1);
+            text-shadow: 0 0 10px rgba(16, 255, 153, 0.5);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 5px 20px rgba(16, 255, 153, 0.3); }
+            50% { box-shadow: 0 5px 30px rgba(16, 255, 153, 0.6); }
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .typing-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10ff99;
+            animation: typing 1.4s infinite;
+            box-shadow: 0 0 10px rgba(16, 255, 153, 0.5);
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, rgba(16, 255, 153, 0.15) 0%, rgba(255, 20, 147, 0.15) 100%);
+            border: 2px solid rgba(16, 255, 153, 0.3);
+            color: #e0e0e0;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .welcome-banner strong {
+            color: #10ff99;
+            text-shadow: 0 0 10px rgba(16, 255, 153, 0.5);
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 15, 30, 0.5);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #10ff99 0%, #ff69b4 100%);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #00ff88 0%, #ff1493 100%);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Memory Lane 🧠</h1>
+            <p>A Journey Through Cyber Security History</p>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="welcome-banner">
+                <strong>Welcome to Memory Lane!</strong><br>
+                Chat naturally to discover keywords and unlock the flag.<br>
+                Type "<strong>hint</strong>" if you need help. Good luck! 🚀
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="avatar bot">🤖</div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
+            <button id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        class MemoryLaneChat {
+            constructor() {
+                this.stage = 0;
+                this.keywords = {
+                    0: ['yahoo', 'marissa'],
+                    1: ['2013', 'billion', '3billion'],
+                    2: ['state-sponsored', 'forged', 'cookies', 'forgery', 'state sponsored', 'state'],
+                    3: ['equifax'],
+                    4: ['apache', 'struts', 'cve-2017-5638', 'cve'],
+                    5: ['remember', 'learn', 'history', 'past']
+                };
+                
+                this.responses = {
+                    0: `Hey! Long time no talk! 😊
+
+Remember when we used to discuss all those tech company scandals? I was just thinking about my time working in security consulting back in the day. We dealt with some MASSIVE incidents...
+
+You know, one company in particular... started with a Y... Their CEO at the time was Marissa Mayer. Ring any bells?`,
+                    1: `YES! Exactly. That purple company from Sunnyvale.
+
+Man, what they went through was INSANE. It wasn't just one breach, it was like... a breach of ALL breaches. We're talking BILLIONS of accounts compromised.
+
+The first one they disclosed was in late 2016, but it actually happened years earlier. Think back... when did the big one really occur? Was it 2012? 2013? 2014?
+
+The scale was unprecedented - literally every single user account they had.`,
+                    2: `Bingo! 2013... that was the year everything went sideways for them.
+
+But here's the kicker - it wasn't just some script kiddie or ransomware gang. The forensics suggested it was much more sophisticated. Foreign actors, you know?
+
+The attackers used some really advanced techniques. They even managed to forge authentication cookies! Can you imagine? Just bypassing passwords entirely...
+
+The term we used was... hmm, what was it... "state-something" attacks? You remember what I'm talking about, right?`,
+                    3: `Exactly! State-sponsored attacks. Nation-state level stuff.
+
+But Yahoo wasn't the only one to suffer, remember? There was another HUGE breach just a few years later in 2017. A credit reporting agency - one of the big three.
+
+They got absolutely hammered. 147 million Americans had their data stolen. SSNs, birth dates, addresses, driver's licenses... everything.
+
+What was that company called again? Equi-something?`,
+                    4: `YES! Equifax. That one still makes me angry.
+
+You know what the worst part was? The vulnerability was SO preventable. They were running outdated software with a KNOWN vulnerability that had been patched months before. It was in their web framework...
+
+Apache something... a Java framework for building web apps. Struts! That was it. Apache Struts. CVE-2017-5638.
+
+A patch was available TWO MONTHS before the breach, but they never applied it. Can you believe that? 147 million people affected because of poor patch management.`,
+                    5: `*sighs* Yeah, Apache Struts... such a preventable disaster.
+
+You know, talking about all this really makes you think about the bigger picture. These weren't just technical failures - they were failures to REMEMBER lessons learned from previous incidents.
+
+Yahoo didn't learn from earlier breaches in the industry. Equifax didn't learn from Yahoo, or Target, or any of the others. The pattern keeps repeating because companies don't LEARN from history.
+
+That's the real lesson here, isn't it? Those who don't remember the past... are doomed to repeat it. We have to LEARN, we have to REMEMBER.
+
+Speaking of remembering... let me share something with you.`,
+                    6: `🎉 Congratulations! You've successfully walked down memory lane! 🎉
+
+You discovered the forgotten stories of massive data breaches that shaped modern cybersecurity.
+
+📊 The breaches you uncovered:
+• Yahoo (2013): 3 billion accounts - State-sponsored attack
+• Equifax (2017): 147 million users - Unpatched Apache Struts (CVE-2017-5638)
+
+The real vulnerability isn't always in the code - it's in forgetting the lessons learned from those who came before us.
+
+"Those who cannot remember the past are condemned to repeat it." - George Santayana`
+                };
+
+                this.hints = {
+                    0: "💡 Think about major tech companies that faced data breaches. Purple logo, started with Y...",
+                    1: "💡 The breach happened in the early 2010s. What year between 2012-2014? Think about the scale: billions...",
+                    2: "💡 Who was behind the attack? Think nation-level attacks. They forged something important...",
+                    3: "💡 One of the three major credit bureaus in the US. Starts with 'Equi...'",
+                    4: "💡 A Java web framework developed by Apache. Used for building web applications. Rhymes with 'cuts'...",
+                    5: "💡 The key lesson from these breaches - what must we do with historical lessons? Think about memory..."
+                };
+
+                this.wrongAnswers = [
+                    "🤔 Hmm, not quite! Think again and search for the right keyword...",
+                    "❌ That's not it. Try searching for more information!",
+                    "🔍 Keep searching! The answer is hidden in our conversation...",
+                    "💭 Think again! Review what we've discussed so far...",
+                    "🎯 Close, but not quite. Search for the specific term I mentioned!",
+                    "🔎 Not the answer I'm looking for. Try researching this topic online!"
+                ];
+
+                this.initializeChat();
+            }
+
+            initializeChat() {
+                this.chatContainer = document.getElementById('chatContainer');
+                this.userInput = document.getElementById('userInput');
+                this.sendBtn = document.getElementById('sendBtn');
+                this.typingIndicator = document.getElementById('typingIndicator');
+
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                this.userInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+
+                // Show initial message
+                setTimeout(() => this.addBotMessage(this.responses[0]), 1000);
+            }
+
+            addBotMessage(message, isHint = false, isWrong = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot';
+                
+                const isFlag = message.includes('Congratulations');
+                const extraClass = isHint ? ' hint-message' : (isWrong ? ' wrong-answer' : '');
+                
+                if (isFlag) {
+                    messageDiv.innerHTML = `
+                        <div class="avatar">🤖</div>
+                        <div class="message-content">
+                            ${message.replace(/\n/g, '<br>')}
+                            <div class="flag-display">
+                                🚩 shellmates{history_repeats_when_forgotten} 🚩
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="avatar">🤖</div>
+                        <div class="message-content${extraClass}">${message.replace(/\n/g, '<br>')}</div>
+                    `;
+                }
+                
+                this.chatContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            addUserMessage(message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user';
+                messageDiv.innerHTML = `
+                    <div class="avatar">👤</div>
+                    <div class="message-content">${message}</div>
+                `;
+                this.chatContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            showTyping() {
+                this.typingIndicator.classList.add('active');
+                this.scrollToBottom();
+            }
+
+            hideTyping() {
+                this.typingIndicator.classList.remove('active');
+            }
+
+            scrollToBottom() {
+                setTimeout(() => {
+                    this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+                }, 100);
+            }
+
+            checkKeywords(input) {
+                const normalized = input.toLowerCase().trim();
+                
+                if (this.stage >= Object.keys(this.keywords).length) {
+                    return true;
+                }
+                
+                const currentKeywords = this.keywords[this.stage];
+                return currentKeywords.some(keyword => normalized.includes(keyword.toLowerCase()));
+            }
+
+            getRandomWrongAnswer() {
+                return this.wrongAnswers[Math.floor(Math.random() * this.wrongAnswers.length)];
+            }
+
+            sendMessage() {
+                const message = this.userInput.value.trim();
+                if (!message) return;
+
+                this.addUserMessage(message);
+                this.userInput.value = '';
+
+                this.showTyping();
+
+                setTimeout(() => {
+                    this.hideTyping();
+
+                    // Check if user is asking for a hint
+                    if (message.toLowerCase() === 'hint' || message.toLowerCase() === '?' || message.toLowerCase() === 'help') {
+                        this.addBotMessage(this.hints[this.stage] || "💡 Keep exploring the conversation...", true, false);
+                        return;
+                    }
+
+                    // Check if the answer is correct
+                    if (this.checkKeywords(message)) {
+                        this.stage++;
+                        if (this.stage < Object.keys(this.responses).length) {
+                            this.addBotMessage(this.responses[this.stage]);
+                        } else {
+                            this.addBotMessage(this.responses[6]);
+                        }
+                    } else {
+                        // Wrong answer - show "think again" message
+                        this.addBotMessage(this.getRandomWrongAnswer(), false, true);
+                    }
+                }, 1000 + Math.random() * 1000);
+            }
+        }
+
+        // Initialize the chat when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            new MemoryLaneChat();
+        });
+    </script>
+</body>
+</html>
