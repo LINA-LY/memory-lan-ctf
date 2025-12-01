@@ -1,13 +1,13 @@
 # Memory Lane CTF - Write-up
 
-**Category:** Misc
-**Flag:** `shellmates{history_repeats_when_forgotten}`
-**challenge website**: https://lina-ly.github.io/memory-lan-ctf/
+- Category: Misc
+- *Flag:* `shellmates{history_repeats_when_forgotten}`
+- challenge website: https://lina-ly.github.io/memory-lan-ctf/
 ---
 
 ##  Challenge Description
 
-"Sometimes the past whispers secrets if you know what to listen for. Chat with an old friend who remembers everything... almost."
+*Sometimes the past whispers secrets if you know what to listen for. Chat with an old friend who remembers everything... almost.*
 
 ---
 
